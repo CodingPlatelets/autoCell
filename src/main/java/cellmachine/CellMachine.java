@@ -6,8 +6,16 @@ import field.View;
 
 import javax.swing.*;
 
+/**
+ * 这是一个细胞自动机
+ *
+ * @author edward
+ */
+
 public class CellMachine {
     static Field field = new Field(30, 30);
+    private static final int LOOP_NUMBER = 1000;
+    private static final int SLEEP_TIME = 200;
 
     public static void main(String[] args) {
 
@@ -31,13 +39,13 @@ public class CellMachine {
         View view = new View(field);
         JFrame frame = getFrame(view);
 
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < LOOP_NUMBER; i++) {
             neighbor(dieOrLive);
             report(dieOrLive);
             frame.repaint();
             System.out.println("UPDATE");
             try {
-                Thread.sleep(200);
+                Thread.sleep(SLEEP_TIME);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
