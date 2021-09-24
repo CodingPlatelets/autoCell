@@ -7,9 +7,10 @@ import field.View;
 import javax.swing.*;
 
 public class CellMachine {
+    static Field field = new Field(30, 30);
 
     public static void main(String[] args) {
-        Field field = new Field(3, 3);
+
         for (int row = 0; row < field.getHeight(); row++) {
             for (int col = 0; col < field.getWidth(); col++) {
                 field.place(row, col, new Cell());
@@ -23,58 +24,70 @@ public class CellMachine {
                 }
             }
         }
+        // 保存数组
+        int[][] dieOrLive = new int[field.getHeight()][field.getWidth()];
 
         //窗口
         View view = new View(field);
-        JFrame frame = new JFrame();
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setResizable(false);
-        frame.setTitle("Cells");
-        frame.add(view);
-        frame.pack();
-        frame.setVisible(true);
+        JFrame frame = getFrame(view);
 
         for (int i = 0; i < 1000; i++) {
-            boolean flag = false;
-            for (int row = 0; row < field.getHeight(); row++) {
-                for (int col = 0; col < field.getWidth(); col++) {
-                    Cell cell = field.get(row, col);
-                    int numOfLive = field.getNeighbourInLive(row, col);
-                    System.out.print("[" + row + "][" + col + "]:");
-                    System.out.print(cell.isAlive() ? "live" : "dead");
-                    System.out.print(":" + numOfLive + "-->");
-                    if (cell.isAlive()) {
-                        if (numOfLive < 2 || numOfLive > 3) {
-                            flag = true;
-                            cell.die();
-                            System.out.print("die");
-                        }
-                    } else if (numOfLive == 3) {
-                        flag = true;
-                        cell.reborn();
-                        System.out.print("reborn");
-                    }
-                    System.out.println();
-                }
-            }
+            neighbor(dieOrLive);
+            report(dieOrLive);
+            frame.repaint();
             System.out.println("UPDATE");
             try {
                 Thread.sleep(200);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            if (!flag) {
-                for (int row = 0; row < field.getHeight(); row++) {
-                    for (int col = 0; col < field.getWidth(); col++) {
-                        Cell cell = field.get(row, col);
-                        if (Math.random() < 0.1) {
-                            cell.reborn();
-                        }
+
+        }
+    }
+
+    public static void neighbor(int[][] dieOrLive) {
+        for (int row = 0; row < field.getHeight(); row++) {
+            for (int col = 0; col < field.getWidth(); col++) {
+                Cell cell = field.get(row, col);
+                int numOfLive = field.getNeighbourInLive(row, col);
+                if (cell.isAlive()) {
+                    if (numOfLive < 2 || numOfLive > 3) {
+                        dieOrLive[row][col] = -1;
                     }
+                } else if (numOfLive == 3) {
+                    dieOrLive[row][col] = 1;
                 }
             }
-            frame.repaint();
         }
+    }
+
+    public static void report(int[][] dieOrLive) {
+        for (int i = 0; i < field.getHeight(); i++) {
+            for (int j = 0; j < field.getWidth(); j++) {
+                System.out.print("[" + i + "][" + j + "]");
+                System.out.print(":  -->");
+                if (dieOrLive[i][j] == 1) {
+                    field.get(i, j).reborn();
+                    System.out.println("reborn");
+                } else if (dieOrLive[i][j] == -1) {
+                    field.get(i, j).die();
+                    System.out.println("die");
+                } else {
+                    System.out.println("remaining");
+                }
+            }
+        }
+    }
+
+    public static JFrame getFrame(View v) {
+        JFrame frame = new JFrame();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setResizable(false);
+        frame.setTitle("Cells");
+        frame.add(v);
+        frame.pack();
+        frame.setVisible(true);
+        return frame;
     }
 
 }
